@@ -2,10 +2,11 @@ import * as cdk from '@aws-cdk/core';
 
 /**
  * PAJ - Main Stack to define
- * S3 buckets
- * CloudFront
+ * Domain
+ * HostedZone
+ * CertificateManager
  */
-export class WillshareitAppStack extends cdk.Stack {
+export class WillshareitAppDnsStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
