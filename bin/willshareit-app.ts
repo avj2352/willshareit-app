@@ -2,20 +2,16 @@
 import 'source-map-support/register';
 import * as cdk from '@aws-cdk/core';
 import { WillshareitAppStack } from '../lib/willshareit-app-stack';
+import { WillshareitAppServiceStack } from '../lib/services/willshareit-app-service-stack';
 
 const app = new cdk.App();
+
+// 1. Stack to create - S3, CloudFront, Deployment
 new WillshareitAppStack(app, 'WillshareitAppStack', {
-  /* If you don't specify 'env', this stack will be environment-agnostic.
-   * Account/Region-dependent features and context lookups will not work,
-   * but a single synthesized template can be deployed anywhere. */
+  env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: 'us-east-1' },
+});
 
-  /* Uncomment the next line to specialize this stack for the AWS Account
-   * and Region that are implied by the current CLI configuration. */
-  // env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
-
-  /* Uncomment the next line if you know exactly what Account and Region you
-   * want to deploy the stack to. */
-  // env: { account: '123456789012', region: 'us-east-1' },
-
-  /* For more information, see https://docs.aws.amazon.com/cdk/latest/guide/environments.html */
+// 2. Stack to create - Dynamo DB, Lambda function
+new WillshareitAppServiceStack(app, 'WillshareitAppServiceStack', {
+  env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: 'us-east-1' },
 });

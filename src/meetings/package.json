@@ -1,0 +1,16 @@
+{
+  "name": "create-meeting",
+  "version": "1.0.0",
+  "description": "meeting lambda function",
+  "main": "create.js",
+  "scripts": {
+    "build": "tsc"
+  },
+  "keywords": [],
+  "author": "pramod-aj",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.77",
+    "aws-sdk": "^2.927.0"
+  }
+}

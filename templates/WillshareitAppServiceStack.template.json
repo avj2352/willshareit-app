@@ -1,0 +1,351 @@
+{
+  "Resources": {
+    "MeetingsTable00BD45B4": {
+      "Type": "AWS::DynamoDB::Table",
+      "Properties": {
+        "KeySchema": [
+          {
+            "AttributeName": "id",
+            "KeyType": "HASH"
+          }
+        ],
+        "AttributeDefinitions": [
+          {
+            "AttributeName": "id",
+            "AttributeType": "S"
+          }
+        ],
+        "BillingMode": "PAY_PER_REQUEST",
+        "TableName": "meetings"
+      },
+      "UpdateReplacePolicy": "Retain",
+      "DeletionPolicy": "Retain",
+      "Metadata": {
+        "aws:cdk:path": "WillshareitAppServiceStack/MeetingsTable/Resource"
+      }
+    },
+    "WillshareitAppCreateMeetingLambdaServiceRoleFCA30ECC": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com"
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+              ]
+            ]
+          }
+        ]
+      },
+      "Metadata": {
+        "aws:cdk:path": "WillshareitAppServiceStack/WillshareitAppCreateMeetingLambda/ServiceRole/Resource"
+      }
+    },
+    "WillshareitAppCreateMeetingLambdaServiceRoleDefaultPolicyF601D7C7": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "dynamodb:BatchGetItem",
+                "dynamodb:GetRecords",
+                "dynamodb:GetShardIterator",
+                "dynamodb:Query",
+                "dynamodb:GetItem",
+                "dynamodb:Scan",
+                "dynamodb:ConditionCheckItem",
+                "dynamodb:BatchWriteItem",
+                "dynamodb:PutItem",
+                "dynamodb:UpdateItem",
+                "dynamodb:DeleteItem"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "MeetingsTable00BD45B4",
+                    "Arn"
+                  ]
+                },
+                {
+                  "Ref": "AWS::NoValue"
+                }
+              ]
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "PolicyName": "WillshareitAppCreateMeetingLambdaServiceRoleDefaultPolicyF601D7C7",
+        "Roles": [
+          {
+            "Ref": "WillshareitAppCreateMeetingLambdaServiceRoleFCA30ECC"
+          }
+        ]
+      },
+      "Metadata": {
+        "aws:cdk:path": "WillshareitAppServiceStack/WillshareitAppCreateMeetingLambda/ServiceRole/DefaultPolicy/Resource"
+      }
+    },
+    "WillshareitAppCreateMeetingLambdaF348DE4D": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "AssetParameters057b2dab9f0014c606c410b3787375d6992ee9fba938afb398fdf8981e232e01S3Bucket8139F8A8"
+          },
+          "S3Key": {
+            "Fn::Join": [
+              "",
+              [
+                {
+                  "Fn::Select": [
+                    0,
+                    {
+                      "Fn::Split": [
+                        "||",
+                        {
+                          "Ref": "AssetParameters057b2dab9f0014c606c410b3787375d6992ee9fba938afb398fdf8981e232e01S3VersionKey2D9CD801"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "Fn::Select": [
+                    1,
+                    {
+                      "Fn::Split": [
+                        "||",
+                        {
+                          "Ref": "AssetParameters057b2dab9f0014c606c410b3787375d6992ee9fba938afb398fdf8981e232e01S3VersionKey2D9CD801"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            ]
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "WillshareitAppCreateMeetingLambdaServiceRoleFCA30ECC",
+            "Arn"
+          ]
+        },
+        "Environment": {
+          "Variables": {
+            "TABLE_NAME": {
+              "Ref": "MeetingsTable00BD45B4"
+            },
+            "AWS_NODEJS_CONNECTION_REUSE_ENABLED": "1"
+          }
+        },
+        "Handler": "index.createMeeting",
+        "Runtime": "nodejs12.x"
+      },
+      "DependsOn": [
+        "WillshareitAppCreateMeetingLambdaServiceRoleDefaultPolicyF601D7C7",
+        "WillshareitAppCreateMeetingLambdaServiceRoleFCA30ECC"
+      ],
+      "Metadata": {
+        "aws:cdk:path": "WillshareitAppServiceStack/WillshareitAppCreateMeetingLambda/Resource",
+        "aws:asset:path": "asset.057b2dab9f0014c606c410b3787375d6992ee9fba938afb398fdf8981e232e01",
+        "aws:asset:property": "Code"
+      }
+    },
+    "WillshareitAppHttpApiA0F3B1A0": {
+      "Type": "AWS::ApiGatewayV2::Api",
+      "Properties": {
+        "CorsConfiguration": {
+          "AllowMethods": [
+            "GET",
+            "POST"
+          ],
+          "AllowOrigins": [
+            "*"
+          ]
+        },
+        "Name": "meetings",
+        "ProtocolType": "HTTP"
+      },
+      "Metadata": {
+        "aws:cdk:path": "WillshareitAppServiceStack/WillshareitAppHttpApi/Resource"
+      }
+    },
+    "WillshareitAppHttpApiDefaultStageAE21BC26": {
+      "Type": "AWS::ApiGatewayV2::Stage",
+      "Properties": {
+        "ApiId": {
+          "Ref": "WillshareitAppHttpApiA0F3B1A0"
+        },
+        "StageName": "$default",
+        "AutoDeploy": true
+      },
+      "Metadata": {
+        "aws:cdk:path": "WillshareitAppServiceStack/WillshareitAppHttpApi/DefaultStage/Resource"
+      }
+    },
+    "WillshareitAppHttpApiPOSTmeetingsWillshareitAppServiceStackWillshareitAppHttpApiPOSTmeetings636F1E70PermissionDA6D357B": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "WillshareitAppCreateMeetingLambdaF348DE4D",
+            "Arn"
+          ]
+        },
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":execute-api:us-east-1:533935803992:",
+              {
+                "Ref": "WillshareitAppHttpApiA0F3B1A0"
+              },
+              "/*/*/meetings"
+            ]
+          ]
+        }
+      },
+      "Metadata": {
+        "aws:cdk:path": "WillshareitAppServiceStack/WillshareitAppHttpApi/POST--meetings/WillshareitAppServiceStackWillshareitAppHttpApiPOSTmeetings636F1E70-Permission"
+      }
+    },
+    "WillshareitAppHttpApiPOSTmeetingsHttpIntegration0f8037c5eeebc7a9fd70dc87dd90030b9FA8A2D5": {
+      "Type": "AWS::ApiGatewayV2::Integration",
+      "Properties": {
+        "ApiId": {
+          "Ref": "WillshareitAppHttpApiA0F3B1A0"
+        },
+        "IntegrationType": "AWS_PROXY",
+        "IntegrationUri": {
+          "Fn::GetAtt": [
+            "WillshareitAppCreateMeetingLambdaF348DE4D",
+            "Arn"
+          ]
+        },
+        "PayloadFormatVersion": "2.0"
+      },
+      "Metadata": {
+        "aws:cdk:path": "WillshareitAppServiceStack/WillshareitAppHttpApi/POST--meetings/HttpIntegration-0f8037c5eeebc7a9fd70dc87dd90030b/Resource"
+      }
+    },
+    "WillshareitAppHttpApiPOSTmeetings34A39A58": {
+      "Type": "AWS::ApiGatewayV2::Route",
+      "Properties": {
+        "ApiId": {
+          "Ref": "WillshareitAppHttpApiA0F3B1A0"
+        },
+        "RouteKey": "POST /meetings",
+        "AuthorizationType": "NONE",
+        "Target": {
+          "Fn::Join": [
+            "",
+            [
+              "integrations/",
+              {
+                "Ref": "WillshareitAppHttpApiPOSTmeetingsHttpIntegration0f8037c5eeebc7a9fd70dc87dd90030b9FA8A2D5"
+              }
+            ]
+          ]
+        }
+      },
+      "Metadata": {
+        "aws:cdk:path": "WillshareitAppServiceStack/WillshareitAppHttpApi/POST--meetings/Resource"
+      }
+    },
+    "CDKMetadata": {
+      "Type": "AWS::CDK::Metadata",
+      "Properties": {
+        "Analytics": "v2:deflate64:H4sIAAAAAAAAE11PTU/DMAz9LbunHh0cdmSahOACU+EPeKmp0jVJFTubqqj/nSZlHDi9Dz0/2zXUD3uoN89440q3l23SPhCkT0F9UQ2xj0GTOjCTLF5nXKeO3rGEqEUdv90JA1oSCll8RBljse+Ts8rFqZ0cWt+eIX3heaCcKGRWA9pzi5XzLfUM7wVeotNivFMGLaTGrwMFT34weiqLC5sVP1aYr2MoR/4WQloifz05TsEa5kUtJ42mQ6EbTtcdpFeR8TCaHMqQZf607FxJthofZWVvTqgLeC/+J0tunmeVP4Ket9d6B/UenjY9G1OF6MRYgmbFH6VCbsd/AQAA"
+      },
+      "Metadata": {
+        "aws:cdk:path": "WillshareitAppServiceStack/CDKMetadata/Default"
+      }
+    }
+  },
+  "Parameters": {
+    "AssetParameters057b2dab9f0014c606c410b3787375d6992ee9fba938afb398fdf8981e232e01S3Bucket8139F8A8": {
+      "Type": "String",
+      "Description": "S3 bucket for asset \"057b2dab9f0014c606c410b3787375d6992ee9fba938afb398fdf8981e232e01\""
+    },
+    "AssetParameters057b2dab9f0014c606c410b3787375d6992ee9fba938afb398fdf8981e232e01S3VersionKey2D9CD801": {
+      "Type": "String",
+      "Description": "S3 key for asset version \"057b2dab9f0014c606c410b3787375d6992ee9fba938afb398fdf8981e232e01\""
+    },
+    "AssetParameters057b2dab9f0014c606c410b3787375d6992ee9fba938afb398fdf8981e232e01ArtifactHashFE2E37CF": {
+      "Type": "String",
+      "Description": "Artifact hash for asset \"057b2dab9f0014c606c410b3787375d6992ee9fba938afb398fdf8981e232e01\""
+    }
+  },
+  "Outputs": {
+    "WillshareitAppCreateMeetingLambdaOutput": {
+      "Value": {
+        "Fn::GetAtt": [
+          "WillshareitAppCreateMeetingLambdaF348DE4D",
+          "Arn"
+        ]
+      },
+      "Export": {
+        "Name": "WillshareitAppCreateMeetingLambdaOutput"
+      }
+    },
+    "WillshareitAppDyanmoTableOutput": {
+      "Value": {
+        "Fn::GetAtt": [
+          "MeetingsTable00BD45B4",
+          "Arn"
+        ]
+      },
+      "Export": {
+        "Name": "WillshareitAppDyanmoTableOutput"
+      }
+    },
+    "WillshareitAppCreateMeetingURL": {
+      "Value": {
+        "Fn::Join": [
+          "",
+          [
+            "https://",
+            {
+              "Ref": "WillshareitAppHttpApiA0F3B1A0"
+            },
+            ".execute-api.us-east-1.",
+            {
+              "Ref": "AWS::URLSuffix"
+            },
+            "/"
+          ]
+        ]
+      },
+      "Export": {
+        "Name": "WillshareitAppCreateMeetingURL"
+      }
+    }
+  }
+}
