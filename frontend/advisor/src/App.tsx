@@ -1,21 +1,29 @@
-
 import * as React from 'react';
 import { hot } from "react-hot-loader/root";
+import { SnackbarProvider } from 'notistack';
+import { MuiThemeProvider, StylesProvider } from '@material-ui/core/styles';
+// custom
+import { useThemeOptions } from './common/theme/material/ThemeConfigProvider';
+import AdvisorView from './views/Advisor.view';
+import GlobalStyle from './common/theme/styled/GlobalStyled';
 
-interface Props {
-   name:
-    string
-}
 
-class App extends React.Component<Props> {
-  render() {
-    const { name } = this.props;
+
+class App extends React.Component {
+  render() {    
     return (
-      <>
-        <h1>
-          Hello {name}
-        </h1>
-      </>
+      <MuiThemeProvider
+      theme = {useThemeOptions()}>
+          <SnackbarProvider maxSnack={3} anchorOrigin={{
+              vertical: 'top',
+              horizontal: 'center',
+          }}>
+          <StylesProvider injectFirst>
+              <GlobalStyle/>
+                <AdvisorView/>
+          </StylesProvider>
+          </SnackbarProvider>
+      </MuiThemeProvider>      
     );
   }
 }
