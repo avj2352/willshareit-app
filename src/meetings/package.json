@@ -2,7 +2,7 @@
   "name": "create-meeting",
   "version": "1.0.0",
   "description": "meeting lambda function",
-  "main": "create.js",
+  "main": "index.js",
   "scripts": {
     "build": "tsc"
   },
@@ -12,5 +12,8 @@
   "devDependencies": {
     "@types/aws-lambda": "^8.10.77",
     "aws-sdk": "^2.927.0"
+  },
+  "dependencies": {
+    "uuid": "^8.3.2"
   }
 }

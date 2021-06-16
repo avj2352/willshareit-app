@@ -12,10 +12,12 @@ import { LambdaProxyIntegration } from '@aws-cdk/aws-apigatewayv2-integrations';
  * DynamoDB
  */
 export class WillshareitAppServiceStack extends cdk.Stack {
-  constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
-    super(scope, id, props);
+  private readonly productName: string;
 
+  constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
+    super(scope, id, props);        
     // Create Dynamo DB Table
+    this.productName = 'WillshareitApp';
     const table = new Table(this, 'MeetingsTable', {
       partitionKey: { name: 'id', type: AttributeType.STRING },
       billingMode: BillingMode.PAY_PER_REQUEST,
@@ -23,25 +25,44 @@ export class WillshareitAppServiceStack extends cdk.Stack {
     });
 
     // Create Lambda functions
-    const createMeetingLambda = new NodejsFunction(this, 'WillshareitAppCreateMeetingLambda', {
+    const createMeetingLambda = new NodejsFunction(this, `${this.productName}CreateMeetingLambda`, {
       runtime: Runtime.NODEJS_12_X,
       entry: path.join(__dirname, '..','..','src','meetings','create.ts'),
       handler: 'createMeeting',
       environment: {
-        TABLE_NAME: table.tableName
+        TABLE_NAME: table.tableName,
+        AWS_REGION_WEBRTC_SETUP: 'us-east-1'
       }
     });
-    // Integration
+
+    const getMeetingLambda = new NodejsFunction(this, `${this.productName}GetMeetingLambda`, {
+      runtime: Runtime.NODEJS_12_X,
+      entry: path.join(__dirname, '..','..','src','meetings','get.ts'),
+      handler: 'getMeeting',
+      environment: {
+        TABLE_NAME: table.tableName,
+        AWS_REGION_WEBRTC_SETUP: 'us-east-1'
+      }
+    });
+
+
+    // Integration - create
     const createMeetingLambdaIntegration = new LambdaProxyIntegration({
       handler: createMeetingLambda
     });
 
+    // Integration - get
+    const getMeetingLambdaIntegration = new LambdaProxyIntegration({
+      handler: getMeetingLambda
+    });
+
     // Grant READ WRITE IAM Rules to Lambda function
     table.grantReadWriteData(createMeetingLambda);
+    table.grantReadWriteData(getMeetingLambda);
 
     // API Gateway & Routes
     // Route
-    const httpApi = new HttpApi(this, 'WillshareitAppHttpApi', {
+    const httpApi = new HttpApi(this, `${this.productName}HttpApi`, {
       corsPreflight: {
         allowOrigins: ['*'],
         allowMethods: [CorsHttpMethod.GET, CorsHttpMethod.POST]
@@ -50,33 +71,45 @@ export class WillshareitAppServiceStack extends cdk.Stack {
       createDefaultStage: true
     });
 
-    httpApi.addRoutes(
-      {
+    httpApi.addRoutes({
         path: '/meetings',
         methods: [HttpMethod.POST],
         integration: createMeetingLambdaIntegration
-      }      
-    );
+    });
+
+    httpApi.addRoutes({
+      path: '/meetings',
+      methods: [HttpMethod.GET],
+      integration: getMeetingLambdaIntegration
+  });
+
+  
+
     
 
     // CLOUDFUNCTIONS
 
     // Create cloud function lambda Arn for deployment process
-    new cdk.CfnOutput(this, 'WillshareitAppCreateMeetingLambdaOutput', {
+    new cdk.CfnOutput(this, `${this.productName}CreateMeetingLambdaOutput`, {
       value: createMeetingLambda.functionArn,
-      exportName: 'WillshareitAppCreateMeetingLambdaOutput'
+      exportName: `${this.productName}CreateMeetingLambdaOutput`
+    });
+
+    new cdk.CfnOutput(this, `${this.productName}GetMeetingLambdaOutput`, {
+      value: getMeetingLambda.functionArn,
+      exportName: `${this.productName}GetMeetingLambdaOutput`
     });
 
     // Create cloud dynamo lambda Arn for deployment process
-    new cdk.CfnOutput(this, 'WillshareitAppDyanmoTableOutput', {
+    new cdk.CfnOutput(this, `${this.productName}DyanmoTableOutput`, {
       value: table.tableArn,
-      exportName: 'WillshareitAppDyanmoTableOutput'
+      exportName: `${this.productName}DyanmoTableOutput`
     });
 
     // API Gateway URL output
-    new cdk.CfnOutput(this, 'WillshareitAppCreateMeetingURL', {
+    new cdk.CfnOutput(this, `${this.productName}MeetingAPIURL`, {
       value: httpApi.url!,
-      exportName: 'WillshareitAppCreateMeetingURL'
+      exportName: `${this.productName}MeetingAPIURL`
     });
 
   }
