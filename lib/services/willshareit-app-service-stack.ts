@@ -11,17 +11,26 @@ import { LambdaProxyIntegration } from '@aws-cdk/aws-apigatewayv2-integrations';
  * Lambda functions
  * DynamoDB
  */
+interface IWillshareitAppStackProps extends cdk.StackProps {
+  AWS_SES_REGION: string;
+  SES_EMAIL_FROM: string;
+}
+
 export class WillshareitAppServiceStack extends cdk.Stack {
   private readonly productName: string;
+  private readonly tableName: string;
 
-  constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
-    super(scope, id, props);        
-    // Create Dynamo DB Table
+  constructor(scope: cdk.Construct, id: string, props: IWillshareitAppStackProps) {
+    super(scope, id, props);   
+    const { AWS_SES_REGION, SES_EMAIL_FROM } = props;     
     this.productName = 'WillshareitApp';
+    this.tableName = `meetings`;
+
+    // Create Dynamo DB Table
     const table = new Table(this, 'MeetingsTable', {
       partitionKey: { name: 'id', type: AttributeType.STRING },
       billingMode: BillingMode.PAY_PER_REQUEST,
-      tableName: 'meetings'
+      tableName: this.tableName
     });
 
     // Create Lambda functions
@@ -31,7 +40,9 @@ export class WillshareitAppServiceStack extends cdk.Stack {
       handler: 'createMeeting',
       environment: {
         TABLE_NAME: table.tableName,
-        AWS_REGION_WEBRTC_SETUP: 'us-east-1'
+        AWS_REGION_WEBRTC_SETUP: 'us-east-1',
+        AWS_SES_REGION,
+        SES_EMAIL_FROM
       }
     });
 
