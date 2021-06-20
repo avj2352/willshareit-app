@@ -2,6 +2,7 @@
 
 
 ## Important Links
+- [AWS - Cors rules](https://docs.aws.amazon.com/apigateway/latest/developerguide/how-to-cors.html)
 - [AWS Chime - Out of scope for Cloudformation / CDK](https://github.com/aws/aws-cdk/issues/9268)
 - [AWS CDK Documentation](https://docs.aws.amazon.com/cdk/api/latest/)
 - [Udemy AWS CDK Course](https://www.udemy.com/course/aws-cdk-course)
